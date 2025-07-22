@@ -9,15 +9,30 @@ export function usePersonalizedTips({ location }: { location?: string }) {
     setLoading(true);
     setError(null);
     setData(null);
+    
     const params = new URLSearchParams();
     if (location) params.append('location', location);
-    fetch(`${process.env.REACT_APP_API_URL}/personalized-tips?${params.toString()}`)
+    
+    const apiUrl = process.env.REACT_APP_API_URL || 'https://afya-backend-1iqy.onrender.com';
+    
+    fetch(`${apiUrl}/personalized-tips?${params.toString()}`, {
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
       .then(res => {
-        if (!res.ok) throw new Error('Personalized Tips API error');
+        if (!res.ok) {
+          return res.text().then(text => {
+            throw new Error(`Personalized Tips API error (${res.status}): ${text}`);
+          });
+        }
         return res.json();
       })
       .then(setData)
-      .catch(e => setError(e.message))
+      .catch(e => {
+        console.error('Personalized Tips API error:', e);
+        setError(e.message);
+      })
       .finally(() => setLoading(false));
   }, [location]);
 

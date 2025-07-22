@@ -20,6 +20,11 @@ API_KEY = os.getenv("BACKEND_API_KEY", "testkey")
 
 logging.basicConfig(filename='audit.log', level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
+# Define audit logging function locally
+def log_audit(action: str, user: str, details: str):
+    log_entry = f"ACTION={action} USER={user} DETAILS={details}"
+    logging.info(log_entry)
+
 def verify_api_key(x_api_key: str = Header(...)):
     if x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API Key")
