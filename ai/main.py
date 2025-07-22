@@ -24,12 +24,23 @@ app = FastAPI()  # <-- Move this to the top before any use of 'app'
 # CORS setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://your-production-frontend.com"],
+    allow_origins=["http://localhost:3000", "https://afya-jirani.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 from ai.mpesa import router as mpesa_router
+
+# ✅ Define the API key verification function early
+def verify_api_key(x_api_key: str):
+    if x_api_key != "your-secret-api-key":
+        raise HTTPException(status_code=401, detail="Invalid API Key")
+
+# ✅ Now your route can safely call the function
+@app.get("/predict")
+def predict(disease: str, predict_range: int, x_api_key: str = Header(...)):
+    verify_api_key(x_api_key)  # Safe to call now
+    return {"prediction": "coming soon"}
 
 # Load available diseases
 with open('ai/diseases.txt') as f:
