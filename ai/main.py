@@ -25,39 +25,6 @@ def log_audit(action: str, user: str, details: str):
 print("CWD:", os.getcwd())
 print("ENV FILE EXISTS:", os.path.exists(".env"))
 
-DATA_PATH = Path(__file__).resolve().parent.parent / "cases.csv"
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-SUPABASE_CLIENT = None
-if SUPABASE_URL and SUPABASE_KEY:
-    try:
-        SUPABASE_CLIENT = create_client(SUPABASE_URL, SUPABASE_KEY)
-    except Exception as exc:
-        logging.warning("Failed to initialize Supabase client: %s", exc)
-
-
-def load_cases_df() -> pd.DataFrame:
-    candidate_paths = [
-        DATA_PATH,
-        Path(__file__).resolve().parent / "cases.csv",
-        Path.cwd() / "cases.csv",
-    ]
-    for path in candidate_paths:
-        if path.exists():
-            try:
-                return pd.read_csv(path)
-            except Exception as exc:
-                logging.warning("Failed reading %s: %s", path, exc)
-    if SUPABASE_CLIENT:
-        try:
-            response = SUPABASE_CLIENT.table('cases').select('*').execute()
-            if response.data:
-                return pd.DataFrame(response.data)
-        except Exception as exc:
-            logging.warning("Failed fetching cases from Supabase: %s", exc)
-    raise HTTPException(status_code=500, detail="cases dataset not found. Ensure cases.csv is present or Supabase is configured.")
-
-
 app = FastAPI()  # <-- Move this to the top before any use of 'app'
 
 # CORS setup
